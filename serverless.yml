@@ -3,7 +3,7 @@ service: api-comentario
 
 provider:
   name: aws
-  runtime: python3.13	
+  runtime: python3.9
   # Default memory size for functions (default: 1024MB)
   memorySize: 1024
   timeout: 20
