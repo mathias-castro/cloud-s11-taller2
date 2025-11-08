@@ -7,8 +7,21 @@ from datetime import datetime
 def lambda_handler(event, context):
     # Entrada (json)
     print(event)
-    tenant_id = event['body']['tenant_id']
-    texto = event['body']['texto']
+    
+    # Parsear el body JSON
+    try:
+        if isinstance(event['body'], str):
+            body = json.loads(event['body'])
+        else:
+            body = event['body']
+    except (json.JSONDecodeError, KeyError) as e:
+        return {
+            'statusCode': 400,
+            'body': json.dumps({'error': 'Invalid JSON body'})
+        }
+    
+    tenant_id = body['tenant_id']
+    texto = body['texto']
     nombre_tabla = os.environ["TABLE_NAME"]
     nombre_bucket = os.environ["BUCKET_NAME"]
     
