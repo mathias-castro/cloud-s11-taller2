@@ -1,23 +1,35 @@
 org: mcastroa
-service: api-pelicula
+service: api-comentario
 
 provider:
   name: aws
-  runtime: python3.12	
+  runtime: python3.13	
   # Default memory size for functions (default: 1024MB)
   memorySize: 1024
-  timeout: 30
+  timeout: 20
   iam:
-    role: arn:aws:iam::016748221635:role/LabRole	
+    role: arn:aws:iam::016748221635:role/LabRole
+    roleStatements:
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:PutObjectAcl
+          - s3:GetObject
+        Resource: "arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*"
+      - Effect: Allow
+        Action:
+          - s3:ListBucket
+        Resource: "arn:aws:s3:::${self:provider.environment.BUCKET_NAME}"
   environment:
-    TABLE_NAME: ${sls:stage}-t_peliculas
+    TABLE_NAME: ${sls:stage}-t_comentarios
+    BUCKET_NAME: ${sls:stage}-ingesta-comentarios-${self:service}
 
 functions:
   crear:
-    handler: CrearPelicula.lambda_handler
+    handler: comentario.lambda_handler
     events:
       - http:
-          path: /pelicula/crear
+          path: /comentario/crear
           method: post
           cors: true
           integration: lambda
@@ -40,3 +52,19 @@ resources:
             KeyType: RANGE
         # Set the capacity to auto-scale
         BillingMode: PAY_PER_REQUEST
+    
+    BucketIngesta:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.BUCKET_NAME}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        VersioningConfiguration:
+          Status: Enabled
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            - ServerSideEncryptionByDefault:
+                SSEAlgorithm: AES256
