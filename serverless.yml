@@ -9,17 +9,6 @@ provider:
   timeout: 20
   iam:
     role: arn:aws:iam::016748221635:role/LabRole
-    roleStatements:
-      - Effect: Allow
-        Action:
-          - s3:PutObject
-          - s3:PutObjectAcl
-          - s3:GetObject
-        Resource: "arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*"
-      - Effect: Allow
-        Action:
-          - s3:ListBucket
-        Resource: "arn:aws:s3:::${self:provider.environment.BUCKET_NAME}"
   environment:
     TABLE_NAME: ${sls:stage}-t_comentarios
     BUCKET_NAME: ${sls:stage}-ingesta-comentarios-${self:service}
